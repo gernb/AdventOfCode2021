@@ -11,9 +11,20 @@ print("Day 01:")
 
 enum Part1 {
     static func run(_ source: InputData) {
-        let input = source.data
+        let input = source.data.compactMap(Int.init)
 
-        print("Part 1 (\(source)):")
+        let increaseCount = input
+            .dropFirst()
+            .enumerated()
+            .map { pair in
+                if pair.element - input[pair.offset] > 0 {
+                    return 1
+                } else {
+                    return 0
+                }
+            }
+            .reduce(0, +)
+        print("Part 1 (\(source)): \(increaseCount)")
     }
 }
 

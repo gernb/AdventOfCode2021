@@ -36,9 +36,27 @@ print("")
 
 enum Part2 {
     static func run(_ source: InputData) {
-        let input = source.data
+        let input = source.data.compactMap(Int.init)
+        let windowedInput = input
+            .dropLast(2)
+            .enumerated()
+            .map {
+                $0.element + input[$0.offset + 1] + input[$0.offset + 2]
+            }
 
-        print("Part 2 (\(source)):")
+        let increaseCount = windowedInput
+            .dropFirst()
+            .enumerated()
+            .map { pair in
+                if pair.element - windowedInput[pair.offset] > 0 {
+                    return 1
+                } else {
+                    return 0
+                }
+            }
+            .reduce(0, +)
+
+        print("Part 2 (\(source)): \(increaseCount)")
     }
 }
 

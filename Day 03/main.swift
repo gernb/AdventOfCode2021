@@ -97,7 +97,7 @@ enum Part2 {
         let o2GenRating = Int(String(o2Gen.first!), radix: 2)!
         let co2ScrubRating = Int(String(co2Scrub.first!), radix: 2)!
 
-        print("Part 2 (\(source)): oxygen scrubber rating = \(o2GenRating), CO2 scrubber rating = \(co2ScrubRating), answer = \(o2GenRating * co2ScrubRating)")
+        print("Part 2 (\(source)): oxygen generator rating = \(o2GenRating), CO2 scrubber rating = \(co2ScrubRating), answer = \(o2GenRating * co2ScrubRating)")
     }
 }
 

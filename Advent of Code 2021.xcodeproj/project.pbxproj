@@ -363,6 +363,7 @@
 		440762972748A2D400E9A775 /* InputData.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InputData.swift; sourceTree = "<group>"; };
 		440762992748A2EB00E9A775 /* InputData.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InputData.swift; sourceTree = "<group>"; };
 		4407629B2748A2FD00E9A775 /* InputData.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InputData.swift; sourceTree = "<group>"; };
+		4407629D274C1CC500E9A775 /* Utilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utilities.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -547,6 +548,7 @@
 		4407614527489B5D00E9A775 = {
 			isa = PBXGroup;
 			children = (
+				4407629D274C1CC500E9A775 /* Utilities.swift */,
 				4407615D27489BAE00E9A775 /* Day 01 */,
 				4407616A27489D0700E9A775 /* Day 02 */,
 				4407617527489D4100E9A775 /* Day 03 */,

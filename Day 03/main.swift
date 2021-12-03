@@ -52,9 +52,52 @@ print("")
 
 enum Part2 {
     static func run(_ source: InputData) {
-        let input = source.data
+        let input = source.data.map { Array($0) }
 
-        print("Part 2 (\(source)):")
+        var o2Gen = input
+        var co2Scrub = input
+
+        let bitCount = input[0].count
+        for bit in 0 ..< bitCount {
+            var zeroCount = 0
+            var oneCount = 0
+            o2Gen.forEach {
+                if $0[bit] == "0" {
+                    zeroCount += 1
+                } else {
+                    oneCount += 1
+                }
+            }
+            if oneCount >= zeroCount {
+                o2Gen = o2Gen.filter { $0[bit] == "1" }
+            } else {
+                o2Gen = o2Gen.filter { $0[bit] == "0" }
+            }
+
+            if co2Scrub.count == 1 {
+                continue
+            }
+
+            zeroCount = 0
+            oneCount = 0
+            co2Scrub.forEach {
+                if $0[bit] == "0" {
+                    zeroCount += 1
+                } else {
+                    oneCount += 1
+                }
+            }
+            if zeroCount <= oneCount {
+                co2Scrub = co2Scrub.filter { $0[bit] == "0" }
+            } else {
+                co2Scrub = co2Scrub.filter { $0[bit] == "1" }
+            }
+        }
+
+        let o2GenRating = Int(String(o2Gen.first!), radix: 2)!
+        let co2ScrubRating = Int(String(co2Scrub.first!), radix: 2)!
+
+        print("Part 2 (\(source)): oxygen scrubber rating = \(o2GenRating), CO2 scrubber rating = \(co2ScrubRating), answer = \(o2GenRating * co2ScrubRating)")
     }
 }
 

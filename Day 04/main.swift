@@ -5,7 +5,9 @@
 //  Copyright © 2021 peter bohac. All rights reserved.
 //
 
-final class BingoBoard {
+import Foundation
+
+final class BingoBoard: Identifiable {
     enum Square {
         case unmarked(Int)
         case marked(Int)
@@ -18,6 +20,7 @@ final class BingoBoard {
         }
     }
 
+    let id = UUID()
     var board: [[Square]]
 
     init(_ input: [String]) {
@@ -112,8 +115,35 @@ print("")
 enum Part2 {
     static func run(_ source: InputData) {
         let input = source.data
+        let numbers = input.first!
+            .split(separator: ",")
+            .map(String.init)
+            .compactMap(Int.init)
+        var boards = input
+            .dropFirst(2)
+            .split(separator: "")
+            .map(Array.init)
+            .map(BingoBoard.init)
 
-        print("Part 2 (\(source)):")
+        var numberIndex = 0
+        while boards.count > 1 {
+            let boardsCopy = boards
+            for board in boardsCopy {
+                if board.mark(number: numbers[numberIndex]) {
+                    boards.removeAll { $0.id == board.id }
+                }
+            }
+            numberIndex += 1
+        }
+        // Play out the remaining board
+        while !boards.first!.mark(number: numbers[numberIndex]) {
+            numberIndex += 1
+        }
+
+        let sum = boards.first!.unmarkedSum()
+        let number = numbers[numberIndex]
+
+        print("Part 2 (\(source)): sum = \(sum), number = \(number), answer = \(sum * number)")
     }
 }
 

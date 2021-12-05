@@ -94,9 +94,49 @@ print("")
 
 enum Part2 {
     static func run(_ source: InputData) {
-        let input = source.data
+        let input = source.data.map(Line.init)
 
-        print("Part 2 (\(source)):")
+        let (allXs, allYs) = input.reduce(into: (Set<Int>(), Set<Int>())) { result, line in
+            result.0.insert(line.start.x)
+            result.0.insert(line.end.x)
+            result.1.insert(line.start.y)
+            result.1.insert(line.end.y)
+        }
+        let maxX = allXs.max()!
+        let maxY = allYs.max()!
+
+        var grid = Array(repeating: Array(repeating: 0, count: maxY + 1), count: maxX + 1)
+        for line in input {
+            if line.isDiagonal {
+                let stepX = (line.start.x < line.end.x) ? 1 : -1
+                let stepY = (line.start.y < line.end.y) ? 1 : -1
+                var x = line.start.x
+                var y = line.start.y
+                repeat {
+                    grid[x][y] += 1
+                    x += stepX
+                    y += stepY
+                } while x != line.end.x
+                grid[x][y] += 1
+            } else {
+                let minX = min(line.start.x, line.end.x)
+                let maxX = max(line.start.x, line.end.x)
+                for x in minX ... maxX {
+                    let minY = min(line.start.y, line.end.y)
+                    let maxY = max(line.start.y, line.end.y)
+                    for y in minY ... maxY {
+                        grid[x][y] += 1
+                    }
+                }
+            }
+        }
+
+        var dangerCount = 0
+        for x in 0 ..< grid.count {
+            dangerCount += grid[x].filter { $0 > 1 }.count
+        }
+
+        print("Part 2 (\(source)): \(dangerCount)")
     }
 }
 

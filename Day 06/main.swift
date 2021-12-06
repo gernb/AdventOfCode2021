@@ -11,9 +11,22 @@ print("Day 06:")
 
 enum Part1 {
     static func run(_ source: InputData) {
-        let input = source.data
+        var fish = source.data
 
-        print("Part 1 (\(source)):")
+        for _ in 1 ... 80 {
+            var newFish: [Int] = []
+            for (idx, f) in fish.enumerated() {
+                if f == 0 {
+                    newFish.append(8)
+                    fish[idx] = 6
+                } else {
+                    fish[idx] -= 1
+                }
+            }
+            fish.append(contentsOf: newFish)
+        }
+
+        print("Part 1 (\(source)): \(fish.count)")
     }
 }
 

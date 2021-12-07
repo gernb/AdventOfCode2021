@@ -33,11 +33,27 @@ InputData.allCases.forEach(Part1.run)
 
 print("")
 
+func cost(from: Int, to: Int) -> Int {
+    let distance = abs(from - to)
+    guard distance > 0 else { return 0 }
+    return (1 ... distance).reduce(0, +)
+}
+
 enum Part2 {
     static func run(_ source: InputData) {
         let input = source.data
+        let min = input.min()!
+        let max = input.max()!
 
-        print("Part 2 (\(source)):")
+        var sums: [Int: Int] = [:]
+        for pos in min ... max {
+            let sum = input.reduce(0) { $0 + cost(from: $1, to: pos) }
+            sums[pos] = sum
+        }
+
+        let minSum = sums.min { $0.value < $1.value }
+
+        print("Part 2 (\(source)): \(minSum!.value)")
     }
 }
 

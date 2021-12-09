@@ -64,51 +64,54 @@ extension Point {
     var down: Point { Point(x: x, y: y+1) }
 }
 
+func buildMap(from: [String]) -> [Point: Int] {
+    var map: [Point: Int] = [:]
+    for y in 0 ..< from.count {
+        let line = Array(from[y])
+        for x in 0 ..< line.count {
+            let p = Point(x: x, y: y)
+            map[p] = Int(String(line[x]))
+        }
+    }
+    return map
+}
+
+func lowestPoints(in map: [Point: Int]) -> [Point] {
+    map.keys.compactMap { point -> Point? in
+        let height = map[point]!
+        return height < map[point.left, default: 10] &&
+            height < map[point.up, default: 10] &&
+            height < map[point.right, default: 10] &&
+            height < map[point.down, default: 10] ? point : nil
+    }
+}
+
+func findBasin(from lowPoint: Point, with map: [Point: Int]) -> Set<Point> {
+    var visited: Set<Point> = []
+    var queue = [lowPoint]
+    while !queue.isEmpty {
+        let p = queue.removeFirst()
+        visited.insert(p)
+        for next in [p.up, p.left, p.right, p.down] {
+            if !visited.contains(next) && !queue.contains(next) && map[next, default: 9] < 9 {
+                queue.append(next)
+            }
+        }
+    }
+    return visited
+}
+
 enum Part2 {
     static func run(_ source: InputData) {
-        let maxY = source.data.count
-        let maxX = source.data[0].count
-        var map: [Point: Int] = [:]
-        for y in 0 ..< maxY {
-            let line = Array(source.data[y])
-            for x in 0 ..< maxX {
-                let p = Point(x: x, y: y)
-                map[p] = Int(String(line[x]))
-            }
-        }
+        let map = buildMap(from: source.data)
+        let answer = lowestPoints(in: map)
+            .map { findBasin(from: $0, with: map) }
+            .map(\.count)
+            .sorted()
+            .suffix(3)
+            .reduce(1, *)
 
-        var lowestPoints: [Point] = []
-        for y in 0 ..< maxY {
-            for x in 0 ..< maxX {
-                let p = Point(x: x, y: y)
-                let height = map[p]!
-                if height < map[p.left, default: 10] &&
-                    height < map[p.up, default: 10] &&
-                    height < map[p.right, default: 10] &&
-                    height < map[p.down, default: 10] {
-                    lowestPoints.append(p)
-                }
-            }
-        }
-
-        var basinSizes: [Int] = []
-        for lowPoint in lowestPoints {
-            var visited: [Point] = []
-            var queue = [lowPoint]
-            while !queue.isEmpty {
-                let p = queue.removeFirst()
-                visited.append(p)
-                for next in [p.up, p.left, p.right, p.down] {
-                    if !visited.contains(next) && !queue.contains(next) && map[next, default: 9] < 9 {
-                        queue.append(next)
-                    }
-                }
-            }
-            basinSizes.append(visited.count)
-        }
-        let product = basinSizes.sorted().suffix(3).reduce(1, *)
-
-        print("Part 2 (\(source)): \(product)")
+        print("Part 2 (\(source)): \(answer)")
     }
 }
 

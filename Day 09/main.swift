@@ -9,11 +9,45 @@
 
 print("Day 09:")
 
+struct Point: Hashable {
+    let x: Int
+    let y: Int
+}
+
+extension Point: CustomDebugStringConvertible {
+    var debugDescription: String { "\(x),\(y)" }
+}
+
 enum Part1 {
     static func run(_ source: InputData) {
-        let input = source.data
+        let input = source.data.map { line in
+            Array(line).map(String.init).compactMap(Int.init)
+        }
 
-        print("Part 1 (\(source)):")
+        let maxY = input.count
+        let maxX = input[0].count
+        var map: [Point: Int] = [:]
+        for y in 0 ..< maxY {
+            for x in 0 ..< maxX {
+                map[Point(x: x, y: y)] = input[y][x]
+            }
+        }
+
+        var lowestHeights: [Int] = []
+        for y in 0 ..< maxY {
+            for x in 0 ..< maxX {
+                let height = map[Point(x: x, y: y)]!
+                if height < map[Point(x: x-1, y: y), default: 10] &&
+                    height < map[Point(x: x, y: y - 1), default: 10] &&
+                    height < map[Point(x: x + 1, y: y), default: 10] &&
+                    height < map[Point(x: x, y: y + 1), default: 10] {
+                    lowestHeights.append(height)
+                }
+            }
+        }
+        let sum = lowestHeights.reduce(0, +) + lowestHeights.count
+
+        print("Part 1 (\(source)): \(sum)")
     }
 }
 

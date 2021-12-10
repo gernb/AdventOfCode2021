@@ -58,47 +58,51 @@ print("")
 
 enum Part2 {
     static let braceScore = [
-        ")": 1,
-        "]": 2,
-        "}": 3,
-        ">": 4,
+        "(": 1,
+        "[": 2,
+        "{": 3,
+        "<": 4,
     ]
 
-    static let closingBrace = [
-        "(": ")",
-        "[": "]",
-        "{": "}",
-        "<": ">",
-    ]
+    enum Category {
+        case corrupt(String)
+        case incomplete([String])
+
+        var isIncomplete: Bool {
+            if case .incomplete = self {
+                return true
+            }
+            return false
+        }
+    }
+
+    static func parse(_ line: [String]) -> Category {
+        var stack: [String] = []
+        for brace in line {
+            if openingBraces.contains(brace) {
+                stack.append(brace)
+            } else {
+                guard !stack.isEmpty else { fatalError() }
+                let top = stack.removeLast()
+                if matchingBrace[brace]! != top {
+                    return .corrupt(brace)
+                }
+            }
+        }
+        return .incomplete(stack)
+    }
 
     static func run(_ source: InputData) {
         let input = source.data.map { Array($0).map(String.init) }
 
-        var scores: [Int] = []
-        for line in input {
-            var stack: [String] = []
-            var isCorrupt = false
-            for brace in line {
-                if openingBraces.contains(brace) {
-                    stack.append(brace)
-                } else {
-                    guard !stack.isEmpty else { fatalError() }
-                    let top = stack.removeLast()
-                    if matchingBrace[brace]! != top {
-                        isCorrupt = true
-                        break
-                    }
+        let scores = input.map(parse)
+            .filter(\.isIncomplete)
+            .map { category -> Int in
+                guard case .incomplete(let stack) = category else { fatalError() }
+                return stack.reversed().reduce(0) { score, brace in
+                    (score * 5) + braceScore[brace]!
                 }
             }
-            guard !isCorrupt else { continue }
-            var score = 0
-            while !stack.isEmpty {
-                let top = stack.removeLast()
-                let match = closingBrace[top]!
-                score = (score * 5) + braceScore[match]!
-            }
-            scores.append(score)
-        }
 
         let answer = scores.sorted()[scores.count / 2]
         print("Part 2 (\(source)): \(answer)")

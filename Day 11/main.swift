@@ -47,10 +47,54 @@ enum Part1 {
 
         var flashes = 0
         for _ in 1 ... 100 {
+            // Increase each point by 1
+            for p in map.keys {
+                map[p]! += 1
+            }
+            // Flash anything greater than 9
+            var flashed: Set<Point> = []
+            var octopusFlashed = false
+            repeat {
+                octopusFlashed = false
+                for p in map.keys {
+                    if map[p]! > 9 && !flashed.contains(p) {
+                        flashed.insert(p)
+                        octopusFlashed = true
+                        flashes += 1
+                        for adj in p.adjacent {
+                            guard let val = map[adj] else { continue }
+                            map[adj] = val + 1
+                        }
+                    }
+                }
+            } while octopusFlashed
+            // Reset anything that flashed
+            for p in map.keys {
+                if map[p]! > 9 {
+                    map[p]! = 0
+                }
+            }
+        }
+
+        print("Part 1 (\(source)): \(flashes)")
+    }
+}
+
+InputData.allCases.forEach(Part1.run)
+
+// MARK: - Part 2
+
+print("")
+
+enum Part2 {
+    static func step(_ map: inout [Point: Int]) -> Int {
+        var flashes = 0
+
         // Increase each point by 1
         for p in map.keys {
             map[p]! += 1
         }
+
         // Flash anything greater than 9
         var flashed: Set<Point> = []
         var octopusFlashed = false
@@ -68,29 +112,27 @@ enum Part1 {
                 }
             }
         } while octopusFlashed
+
         // Reset anything that flashed
         for p in map.keys {
             if map[p]! > 9 {
                 map[p]! = 0
             }
         }
-        }
 
-        print("Part 1 (\(source)): \(flashes)")
+        return flashes
     }
-}
 
-InputData.allCases.forEach(Part1.run)
-
-// MARK: - Part 2
-
-print("")
-
-enum Part2 {
     static func run(_ source: InputData) {
-        let input = source.data
+        var map = source.asMap()
+        var count = 0
+        var flashes = 0
+        repeat {
+            flashes = step(&map)
+            count += 1
+        } while flashes != 100
 
-        print("Part 2 (\(source)):")
+        print("Part 2 (\(source)): \(count)")
     }
 }
 

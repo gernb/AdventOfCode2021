@@ -78,11 +78,51 @@ InputData.allCases.forEach(Part1.run)
 
 print("")
 
-enum Part2 {
-    static func run(_ source: InputData) {
-        let input = source.data
+extension Room: CustomStringConvertible {
+    var description: String { name }
+}
 
-        print("Part 2 (\(source)):")
+enum Part2 {
+    static func foo(_ path: [Room]) -> Int {
+        let smallCaves = path.filter { $0.isSmallRoom && $0.name != "start" }
+        for cave in smallCaves {
+            let count = smallCaves.filter { $0 == cave }.count
+            if count > 1 {
+                return count
+            }
+        }
+        return smallCaves.isEmpty ? 0 : 1
+    }
+
+    static func run(_ source: InputData) {
+        let (start, end) = source.asRooms()
+
+        var paths: [[Room]] = []
+        var queue = [[start]]
+        while !queue.isEmpty {
+            let path = queue.removeFirst()
+            let last = path.last!
+            if last == end {
+                paths.append(path)
+                continue
+            }
+            for next in last.connections {
+                if next == start {
+                    continue
+                }
+                if next.isSmallRoom {
+                    if foo(path) < 2 {
+                        queue.append(path + [next])
+                    } else if !path.contains(next) {
+                        queue.append(path + [next])
+                    }
+                } else {
+                    queue.append(path + [next])
+                }
+            }
+        }
+
+        print("Part 2 (\(source)): \(paths.count)")
     }
 }
 

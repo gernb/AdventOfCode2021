@@ -23,37 +23,36 @@ extension Point {
 }
 
 struct Paper {
-    let dots: [Point: Bool]
+    let dots: Set<Point>
 
-    var maxX: Int { dots.keys.map(\.x).max()! }
-    var maxY: Int { dots.keys.map(\.y).max()! }
+    var maxX: Int { dots.map(\.x).max()! }
+    var maxY: Int { dots.map(\.y).max()! }
 
     func fold(_ fold: Fold) -> Paper {
         switch fold {
         case .vertical(let col):
             assert(maxX / 2 == col)
-            var newDots: [Point: Bool] = [:]
-            for p in dots.keys {
+            var newDots: Set<Point> = []
+            for p in dots {
                 if p.x < col {
-                    newDots[p] = true
+                    newDots.insert(p)
                 } else {
-                    newDots[Point(x: col - (p.x - col), y: p.y)] = true
+                    newDots.insert(Point(x: col - (p.x - col), y: p.y))
                 }
             }
             return Paper(dots: newDots)
 
         case .horizontal(let row):
             assert(maxY / 2 == row)
-            var newDots: [Point: Bool] = [:]
-            for p in dots.keys {
+            var newDots: Set<Point> = []
+            for p in dots {
                 if p.y < row {
-                    newDots[p] = true
+                    newDots.insert(p)
                 } else {
-                    newDots[Point(x: p.x, y: row - (p.y - row))] = true
+                    newDots.insert(Point(x: p.x, y: row - (p.y - row)))
                 }
             }
             return Paper(dots: newDots)
-
         }
     }
 }
@@ -77,10 +76,10 @@ extension Fold {
 
 extension InputData {
     func loadPaperAndFolds() -> (Paper, [Fold]) {
-        var dots: [Point: Bool] = [:]
+        var dots: Set<Point> = []
         var line = 0
         while self.data[line] != "" {
-            dots[Point(rawValue: self.data[line])] = true
+            dots.insert(Point(rawValue: self.data[line]))
             line += 1
         }
         let folds = (line + 1 ..< self.data.count).map { Fold(rawValue: self.data[$0]) }
@@ -108,11 +107,7 @@ extension Paper {
     func draw() {
         for y in 0 ... maxY {
             for x in 0 ... maxX {
-                if dots[Point(x: x, y: y)] != nil {
-                    print("X", terminator: "")
-                } else {
-                    print(" ", terminator: "")
-                }
+                print(dots.contains(Point(x: x, y: y)) ? "█" : " ", terminator: "")
             }
             print("")
         }

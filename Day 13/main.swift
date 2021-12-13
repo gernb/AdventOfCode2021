@@ -104,11 +104,32 @@ InputData.allCases.forEach(Part1.run)
 
 print("")
 
+extension Paper {
+    func draw() {
+        for y in 0 ... maxY {
+            for x in 0 ... maxX {
+                if dots[Point(x: x, y: y)] != nil {
+                    print("X", terminator: "")
+                } else {
+                    print(" ", terminator: "")
+                }
+            }
+            print("")
+        }
+        print("")
+    }
+}
+
 enum Part2 {
     static func run(_ source: InputData) {
-        let input = source.data
+        var (paper, folds) = source.loadPaperAndFolds()
 
-        print("Part 2 (\(source)):")
+        for fold in folds {
+            paper = paper.fold(fold)
+        }
+
+        print("Part 2 (\(source)): \(paper.dots.count)")
+        paper.draw()
     }
 }
 

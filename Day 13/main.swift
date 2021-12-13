@@ -32,33 +32,23 @@ struct Paper {
         switch fold {
         case .vertical(let col):
             assert(maxX / 2 == col)
-            var newDots: Set<Point> = []
-            for p in dots {
-                if p.x < col {
-                    newDots.insert(p)
-                } else {
-                    newDots.insert(Point(x: col - (p.x - col), y: p.y))
-                }
+            let newDots = dots.map { p in
+                p.x < col ? p : Point(x: col - (p.x - col), y: p.y)
             }
-            return Paper(dots: newDots)
+            return Paper(dots: Set(newDots))
 
         case .horizontal(let row):
             assert(maxY / 2 == row)
-            var newDots: Set<Point> = []
-            for p in dots {
-                if p.y < row {
-                    newDots.insert(p)
-                } else {
-                    newDots.insert(Point(x: p.x, y: row - (p.y - row)))
-                }
+            let newDots = dots.map { p in
+                p.y < row ? p : Point(x: p.x, y: row - (p.y - row))
             }
-            return Paper(dots: newDots)
+            return Paper(dots: Set(newDots))
         }
     }
 }
 
 enum Fold {
-    case vertical(Int) // X=...
+    case vertical(Int) // x=...
     case horizontal(Int) // y=...
 }
 

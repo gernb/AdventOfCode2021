@@ -54,9 +54,42 @@ print("")
 
 enum Part2 {
     static func run(_ source: InputData) {
-        let input = source.data
+        let (template, rules) = source.loadTemplateAndRules()
 
-        print("Part 2 (\(source)):")
+        var pairsCount: [[Character]: Int] = [:]
+        for pair in zip(template, template.dropFirst()) {
+            pairsCount[[pair.0, pair.1], default: 0] += 1
+        }
+
+        for _ in 1 ... 40 {
+            var newCounts: [[Character]: Int] = [:]
+            for (pair, count) in pairsCount {
+                let rule = rules[pair]!
+                let left = [pair[0], rule]
+                let right = [rule, pair[1]]
+                newCounts[left, default: 0] += count
+                newCounts[right, default: 0] += count
+            }
+            pairsCount = newCounts
+        }
+
+        var lettersCount: [Character: Int] = [:]
+        for (pair, count) in pairsCount {
+            lettersCount[pair[0], default: 0] += count
+            lettersCount[pair[1], default: 0] += count
+        }
+        lettersCount[template.first!, default: 0] += 1
+        lettersCount[template.last!, default: 0] += 1
+
+        let min = lettersCount.min { lhs, rhs in
+            lhs.value < rhs.value
+        }!.value / 2
+        let max = lettersCount.max { lhs, rhs in
+            lhs.value < rhs.value
+        }!.value / 2
+        let diff = max - min
+
+        print("Part 2 (\(source)): \(diff)")
     }
 }
 

@@ -56,37 +56,29 @@ enum Part2 {
     static func run(_ source: InputData) {
         let (template, rules) = source.loadTemplateAndRules()
 
-        var pairsCount: [[Character]: Int] = [:]
-        for pair in zip(template, template.dropFirst()) {
-            pairsCount[[pair.0, pair.1], default: 0] += 1
+        var lettersCount = template.reduce(into: [Character: Int]()) { result, letter in
+            result[letter, default: 0] += 1
         }
+        var pairsCount = zip(template, template.dropFirst())
+            .reduce(into: [[Character]: Int]()) { result, pair in
+                result[[pair.0, pair.1], default: 0] += 1
+            }
 
         for _ in 1 ... 40 {
             var newCounts: [[Character]: Int] = [:]
             for (pair, count) in pairsCount {
-                let rule = rules[pair]!
-                let left = [pair[0], rule]
-                let right = [rule, pair[1]]
+                let newLetter = rules[pair]!
+                lettersCount[newLetter, default: 0] += count
+                let left = [pair[0], newLetter]
+                let right = [newLetter, pair[1]]
                 newCounts[left, default: 0] += count
                 newCounts[right, default: 0] += count
             }
             pairsCount = newCounts
         }
 
-        var lettersCount: [Character: Int] = [:]
-        for (pair, count) in pairsCount {
-            lettersCount[pair[0], default: 0] += count
-            lettersCount[pair[1], default: 0] += count
-        }
-        lettersCount[template.first!, default: 0] += 1
-        lettersCount[template.last!, default: 0] += 1
-
-        let min = lettersCount.min { lhs, rhs in
-            lhs.value < rhs.value
-        }!.value / 2
-        let max = lettersCount.max { lhs, rhs in
-            lhs.value < rhs.value
-        }!.value / 2
+        let min = lettersCount.values.min(by: <)!
+        let max = lettersCount.values.max(by: <)!
         let diff = max - min
 
         print("Part 2 (\(source)): \(diff)")

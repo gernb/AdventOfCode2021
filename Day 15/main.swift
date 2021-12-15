@@ -93,9 +93,33 @@ print("")
 
 enum Part2 {
     static func run(_ source: InputData) {
-        let input = source.data
+        var map = source.asMap()
 
-        print("Part 2 (\(source)):")
+        var maxX = map.keys.map(\.x).max()! + 1
+        var maxY = map.keys.map(\.y).max()! + 1
+        for (coord, risk) in map {
+            for y in 0 ..< 5 {
+                for x in 0 ..< 5 {
+                    if x == 0 && y == 0 { continue }
+                    let newCoord = Coordinate(x: coord.x + maxX * x, y: coord.y + maxY * y)
+                    var newRisk = risk + x + y
+                    newRisk = newRisk > 9 ? newRisk % 10 + 1 : newRisk
+                    map[newCoord] = newRisk
+                }
+            }
+        }
+        maxX = map.keys.map(\.x).max()!
+        maxY = map.keys.map(\.y).max()!
+
+        let shortestPath = Part1.AStarFindShortestPath(from: .origin, to: Coordinate(x: maxX, y: maxY)) { coord in
+            coord.neighbours.compactMap {
+                guard let risk = map[$0] else { return nil }
+                return ($0, risk)
+            }
+        }
+        let totalRisk = shortestPath.dropFirst().map { map[$0]! }.reduce(0, +)
+
+        print("Part 2 (\(source)): \(totalRisk)")
     }
 }
 

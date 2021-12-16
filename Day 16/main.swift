@@ -390,3 +390,131 @@ enum Part2 {
 Part2.run(Array("C200B40A82"))
 Part2.run(Array("9C0141080250320F1802104A08"))
 Part2.run(InputData.challenge.nibbles)
+
+// MARK: - Alternate Solution
+
+print("")
+
+extension InputData {
+    static let bitLookup = [
+        "0".first!: "0000",
+        "1".first!: "0001",
+        "2".first!: "0010",
+        "3".first!: "0011",
+        "4".first!: "0100",
+        "5".first!: "0101",
+        "6".first!: "0110",
+        "7".first!: "0111",
+        "8".first!: "1000",
+        "9".first!: "1001",
+        "A".first!: "1010",
+        "B".first!: "1011",
+        "C".first!: "1100",
+        "D".first!: "1101",
+        "E".first!: "1110",
+        "F".first!: "1111",
+    ]
+
+    func asBits() -> [Character] {
+        Array(
+            Array(self.data[0])
+                .map { Self.bitLookup[$0]! }
+                .joined()
+        )
+    }
+}
+
+extension Part2.Packet {
+    var versionSum: Int {
+        switch self {
+        case .literal(let version, _, _):
+            return version
+        case .operator(let version, _, let subpackets):
+            return subpackets.map(\.versionSum).reduce(version, +)
+        }
+    }
+}
+
+enum Alternate {
+    static func parseVersion(_ rawValue: inout ArraySlice<Character>) -> Int {
+        let bits = String(rawValue.prefix(3))
+        rawValue = rawValue.dropFirst(3)
+        return Int(bits, radix: 2)!
+    }
+
+    static func parseType(_ rawValue: inout ArraySlice<Character>) -> Int {
+        let bits = String(rawValue.prefix(3))
+        rawValue = rawValue.dropFirst(3)
+        return Int(bits, radix: 2)!
+    }
+
+    static func parseLiteral(_ rawValue: inout ArraySlice<Character>) -> Int {
+        var value = 0
+        var part = 0x10
+        while part > 0xF {
+            let bits = String(rawValue.prefix(5))
+            rawValue = rawValue.dropFirst(5)
+            part = Int(bits, radix: 2)!
+            value = value * 0x10 + (part & 0xF)
+        }
+        return value
+    }
+
+    enum OperatorLength {
+        case bits(Int)
+        case packets(Int)
+    }
+
+    static func parseOpLen(_ rawValue: inout ArraySlice<Character>) -> OperatorLength {
+        let lenType = String(rawValue.prefix(1))
+        rawValue = rawValue.dropFirst(1)
+        if lenType == "0" {
+            let bits = String(rawValue.prefix(15))
+            rawValue = rawValue.dropFirst(15)
+            let len = Int(bits, radix: 2)!
+            return .bits(len)
+        } else {
+            let bits = String(rawValue.prefix(11))
+            rawValue = rawValue.dropFirst(11)
+            let packetCount = Int(bits, radix: 2)!
+            return .packets(packetCount)
+        }
+    }
+
+    static func parsePacket(_ rawValue: inout ArraySlice<Character>) -> Part2.Packet {
+        let version = parseVersion(&rawValue)
+        let type = parseType(&rawValue)
+        if type == 4 {
+            let value = parseLiteral(&rawValue)
+            return .literal(version: version, type: type, value: value)
+        } else {
+            var packets: [Part2.Packet] = []
+            switch parseOpLen(&rawValue) {
+            case .packets(let count):
+                for _ in 1 ... count {
+                    packets.append(parsePacket(&rawValue))
+                }
+            case .bits(let count):
+                var newInput = rawValue.prefix(count)
+                rawValue = rawValue.dropFirst(count)
+                while !newInput.isEmpty {
+                    packets.append(parsePacket(&newInput))
+                }
+            }
+            return .operator(version: version, type: type, subpackets: packets)
+        }
+    }
+
+    static func run(_ source: [Character]) {
+        var bits = ArraySlice(source)
+        let packet = parsePacket(&bits)
+        let part1 = packet.versionSum
+        let part2 = packet.execute()
+
+        print("Alternate Part 1: \(part1)")
+        print("Alternate Part 2: \(part2)")
+        print("")
+    }
+}
+
+Alternate.run(InputData.challenge.asBits())

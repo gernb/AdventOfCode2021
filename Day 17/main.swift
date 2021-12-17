@@ -73,9 +73,19 @@ print("")
 
 enum Part2 {
     static func run(_ source: InputData) {
-        let input = source.data
+        let input = source.toRanges()
 
-        print("Part 2 (\(source)):")
+        var results: [Part1.Vector: Int] = [:]
+        for x in -110 ... 1000 {
+            for y in -110 ... 1000 {
+                let (targetHit, maxHeight) = Part1.launch(xVelocity: x, yVelocity: y, target: input)
+                if targetHit {
+                    results[Part1.Vector(x: x, y: y)] = maxHeight
+                }
+            }
+        }
+
+        print("Part 2 (\(source)): \(results.count)")
     }
 }
 

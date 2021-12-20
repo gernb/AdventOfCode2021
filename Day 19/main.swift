@@ -69,6 +69,7 @@ extension Coordinate {
 struct Scanner {
     let id: Int
     let beacons: [Coordinate]
+    var position: Coordinate = .zero
 }
 
 extension Scanner {
@@ -90,16 +91,6 @@ extension InputData {
 }
 
 enum Part1 {
-    static func allDistances(_ beacons: [Coordinate]) -> [Int] {
-        var result: [Int] = []
-        for (idx, beacon) in beacons.enumerated() {
-            for other in beacons.dropFirst(idx + 1) {
-                result.append(beacon.distance(to: other))
-            }
-        }
-        return result
-    }
-
     static func run(_ source: InputData) {
         let scanners = source.scanners
 
@@ -146,8 +137,7 @@ enum Part1 {
     }
 }
 
-InputData.allCases.forEach(Part1.run)
-//Part1.run(.example)
+//InputData.allCases.forEach(Part1.run)
 
 // MARK: - Part 2
 
@@ -155,35 +145,62 @@ print("")
 
 enum Part2 {
     static func run(_ source: InputData) {
-        let input = source.data
+        let scanners = source.scanners
 
-        print("Part 2 (\(source)):")
+        var scannerPositions = [
+            0: Coordinate.zero
+        ]
+        var beacons = Set(scanners[0].beacons)
+        var queue = scanners.dropFirst()
+        while !queue.isEmpty {
+            let scanner = queue.removeFirst()
+            print("Searching \(scanner.id)...")
+            var foundOrientation = false
+            orientations: for o in beacons.first!.allRotationsAndMirrors.indices {
+                for beacon in beacons {
+                    for var other in scanner.beacons {
+                        var overlapping = Set<Coordinate>()
+                        var nonoverlapping = Set<Coordinate>()
+                        other = other.allRotationsAndMirrors[o]
+                        let v = beacon - other
+                        for var foo in scanner.beacons {
+                            foo = foo.allRotationsAndMirrors[o] + v
+                            if beacons.contains(foo) {
+                                overlapping.insert(foo)
+                            } else {
+                                nonoverlapping.insert(foo)
+                            }
+                        }
+                        if overlapping.count >= 12 {
+                            beacons.formUnion(nonoverlapping)
+                            print("found", scanner.id)
+                            foundOrientation = true
+                            scannerPositions[scanner.id] = v
+                            break orientations
+                        }
+                    }
+                }
+            }
+            if !foundOrientation {
+                queue.append(scanner)
+            }
+        }
+
+        var scannerDistances: [Int] = []
+        for pos1 in scannerPositions.values {
+            for pos2 in scannerPositions.values {
+                scannerDistances.append(pos1.distance(to: pos2))
+            }
+        }
+        let answer = scannerDistances.max()!
+
+        print("Part 2 (\(source)): \(answer)\n")
     }
 }
 
 InputData.allCases.forEach(Part2.run)
 
 // MARK: - Utilities
-
-extension Collection {
-    func combinations(of size: Int) -> [[Element]] {
-        func pick(_ count: Int, from: ArraySlice<Element>) -> [[Element]] {
-            guard count > 0 else { return [] }
-            guard count < from.count else { return [Array(from)] }
-            if count == 1 {
-                return from.map { [$0] }
-            } else {
-                return from.dropLast(count - 1)
-                    .enumerated()
-                    .flatMap { pair in
-                        return pick(count - 1, from: from.dropFirst(pair.offset + 1)).map { [pair.element] + $0 }
-                    }
-            }
-        }
-
-        return pick(size, from: ArraySlice(self))
-    }
-}
 
 extension Array {
     var permutations: [[Element]] {

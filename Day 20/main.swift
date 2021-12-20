@@ -120,9 +120,19 @@ print("")
 
 enum Part2 {
     static func run(_ source: InputData) {
-        let input = source.data
+        var (algorithm, image) = source.loadData()
 
-        print("Part 2 (\(source)):")
+        for iter in 1 ... 50 {
+            image = Part1.enhance(
+                image,
+                using: algorithm,
+                default: (source == .example ? "0" : (iter % 2 == 1 ? "0" : "1"))
+            )
+        }
+
+        let lightPixels = image.values.filter { $0 == "1" }.count
+
+        print("Part 2 (\(source)): \(lightPixels)")
     }
 }
 

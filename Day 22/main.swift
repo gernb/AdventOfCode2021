@@ -21,7 +21,7 @@ struct Point: Hashable, CustomStringConvertible {
 
 //on x=-20..26,y=-36..17,z=-47..7
 
-struct Step {
+struct Step: Hashable {
     enum State: String, Equatable {
         case on, off
     }
@@ -30,7 +30,9 @@ struct Step {
     let xRange: ClosedRange<Int>
     let yRange: ClosedRange<Int>
     let zRange: ClosedRange<Int>
+}
 
+extension Step {
     init(_ rawValue: String) {
         let tokens = rawValue.components(separatedBy: " ")
         self.state = State(rawValue: tokens[0])!
@@ -84,12 +86,48 @@ InputData.allCases.forEach(Part1.run)
 
 print("")
 
-enum Part2 {
-    static func run(_ source: InputData) {
-        let input = source.data
+extension Step {
+    var pointCount: Int {
+        xRange.count * yRange.count * zRange.count
+    }
 
-        print("Part 2 (\(source)):")
+    func intersection(with step: Step) -> Step? {
+        let x = Set(self.xRange).intersection(step.xRange)
+        if x.isEmpty { return nil }
+        let y = Set(self.yRange).intersection(step.yRange)
+        if y.isEmpty { return nil }
+        let z = Set(self.zRange).intersection(step.zRange)
+        if z.isEmpty { return nil }
+
+        return .init(state: .on, xRange: x.min()! ... x.max()!, yRange: y.min()! ... y.max()!, zRange: z.min()! ... z.max()!)
     }
 }
 
-InputData.allCases.forEach(Part2.run)
+enum Part2 {
+    static func run(_ source: InputData) {
+        let steps = source.asSteps()
+        var cubeCounts = [Step: Int]()
+
+        var counter = 0
+        for step in steps {
+            print(counter)
+            counter += 1
+            for (cube, count) in cubeCounts {
+                if let intersection = cube.intersection(with: step) {
+                    cubeCounts[intersection, default: 0] -= count
+                }
+            }
+
+            if step.state == .on {
+                cubeCounts[step, default: 0] += 1
+            }
+        }
+
+        let answer = cubeCounts.map { $0.key.pointCount * $0.value }.reduce(0, +)
+
+        print("Part 2 (\(source)): \(answer)")
+    }
+}
+
+//InputData.allCases.forEach(Part2.run)
+Part2.run(.challenge)

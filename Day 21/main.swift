@@ -60,11 +60,53 @@ Part1.run(player1Start: 6, player2Start: 7)
 print("")
 
 enum Part2 {
-    static func run(_ source: InputData) {
-        let input = source.data
+    static var board = [10, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 
-        print("Part 2 (\(source)):")
+    static func run(player1Start: Int, player2Start: Int) {
+        var cache: [String: (Int, Int)] = [:]
+
+        func turn(position: (p1: Int, p2: Int), score: (p1: Int, p2: Int), player1Turn: Bool) -> (p1: Int, p2: Int) {
+            if score.p1 >= 21 {
+                return (1, 0)
+            }
+            if score.p2 >= 21 {
+                return (0, 1)
+            }
+
+            let key = "\(position),\(score),\(player1Turn)"
+            if let cached = cache[key] {
+                return cached
+            }
+
+            var wins: (p1: Int, p2: Int) = (0, 0)
+            for roll1 in 1...3 {
+                for roll2 in 1...3 {
+                    for roll3 in 1...3 {
+                        let sum = [roll1, roll2, roll3].reduce(0, +)
+                        let newPosition: (p1: Int, p2: Int)
+                        var newScore = score
+                        if player1Turn {
+                            newPosition = ((position.p1 + sum) % 10, position.p2)
+                            newScore.p1 += Self.board[newPosition.p1]
+                        } else {
+                            newPosition = (position.p1, (position.p2 + sum) % 10)
+                            newScore.p2 += Self.board[newPosition.p2]
+                        }
+                        let newWins = turn(position: newPosition, score: newScore, player1Turn: !player1Turn)
+                        wins.p1 += newWins.p1
+                        wins.p2 += newWins.p2
+                    }
+                }
+            }
+            cache[key] = wins
+            return wins
+        }
+
+        let wins = turn(position: (player1Start, player2Start), score: (0, 0), player1Turn: true)
+
+        print("Part 2 start from \(player1Start), \(player2Start): player 1 wins: \(wins.p1), player 2 wins: \(wins.p2), max: \(max(wins.p1, wins.p2))")
     }
 }
 
-InputData.allCases.forEach(Part2.run)
+Part2.run(player1Start: 4, player2Start: 8)
+Part2.run(player1Start: 6, player2Start: 7)

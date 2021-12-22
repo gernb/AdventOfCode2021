@@ -9,11 +9,72 @@
 
 print("Day 22:")
 
+struct Point: Hashable, CustomStringConvertible {
+    var x: Int
+    var y: Int
+    var z: Int
+
+    static let zero: Self = .init(x: 0, y: 0, z: 0)
+
+    var description: String { "(\(x), \(y), \(z))" }
+}
+
+//on x=-20..26,y=-36..17,z=-47..7
+
+struct Step {
+    enum State: String, Equatable {
+        case on, off
+    }
+
+    let state: State
+    let xRange: ClosedRange<Int>
+    let yRange: ClosedRange<Int>
+    let zRange: ClosedRange<Int>
+
+    init(_ rawValue: String) {
+        let tokens = rawValue.components(separatedBy: " ")
+        self.state = State(rawValue: tokens[0])!
+        let ranges = tokens[1].components(separatedBy: ",")
+        var bounds = ranges[0].dropFirst(2).components(separatedBy: "..").compactMap(Int.init)
+        self.xRange = min(bounds[0], bounds[1]) ... max(bounds[0], bounds[1])
+        bounds = ranges[1].dropFirst(2).components(separatedBy: "..").compactMap(Int.init)
+        self.yRange = min(bounds[0], bounds[1]) ... max(bounds[0], bounds[1])
+        bounds = ranges[2].dropFirst(2).components(separatedBy: "..").compactMap(Int.init)
+        self.zRange = min(bounds[0], bounds[1]) ... max(bounds[0], bounds[1])
+    }
+}
+
+extension InputData {
+    func asSteps() -> [Step] {
+        self.data.map(Step.init)
+    }
+}
+
 enum Part1 {
     static func run(_ source: InputData) {
-        let input = source.data
+        let steps = source.asSteps()
+        var cubes = Set<Point>()
 
-        print("Part 1 (\(source)):")
+        let allowedRange = Set(-50 ... 50)
+        for step in steps {
+            if !allowedRange.intersection(step.xRange).isEmpty &&
+                !allowedRange.intersection(step.yRange).isEmpty &&
+                !allowedRange.intersection(step.zRange).isEmpty {
+                for x in max(-50, step.xRange.lowerBound) ... min(50, step.xRange.upperBound) {
+                    for y in max(-50, step.yRange.lowerBound) ... min(50, step.yRange.upperBound) {
+                        for z in max(-50, step.zRange.lowerBound) ... min(50, step.zRange.upperBound) {
+                            if step.state == .on {
+                                cubes.insert(Point(x: x, y: y, z: z))
+                            } else {
+                                cubes.remove(Point(x: x, y: y, z: z))
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        print("Part 1 (\(source)): \(cubes.count)")
     }
 }
 

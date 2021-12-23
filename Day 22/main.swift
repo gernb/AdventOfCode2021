@@ -92,14 +92,14 @@ extension Step {
     }
 
     func intersection(with step: Step) -> Step? {
-        let x = Set(self.xRange).intersection(step.xRange)
-        if x.isEmpty { return nil }
-        let y = Set(self.yRange).intersection(step.yRange)
-        if y.isEmpty { return nil }
-        let z = Set(self.zRange).intersection(step.zRange)
-        if z.isEmpty { return nil }
+        guard self.xRange.overlaps(step.xRange) &&
+                self.yRange.overlaps(step.yRange) &&
+                self.zRange.overlaps(step.zRange) else { return nil }
 
-        return .init(state: .on, xRange: x.min()! ... x.max()!, yRange: y.min()! ... y.max()!, zRange: z.min()! ... z.max()!)
+        let x = max(xRange.lowerBound, step.xRange.lowerBound) ... min(xRange.upperBound, step.xRange.upperBound)
+        let y = max(yRange.lowerBound, step.yRange.lowerBound) ... min(yRange.upperBound, step.yRange.upperBound)
+        let z = max(zRange.lowerBound, step.zRange.lowerBound) ... min(zRange.upperBound, step.zRange.upperBound)
+        return .init(state: .on, xRange: x, yRange: y, zRange: z)
     }
 }
 
@@ -108,10 +108,7 @@ enum Part2 {
         let steps = source.asSteps()
         var cubeCounts = [Step: Int]()
 
-        var counter = 0
         for step in steps {
-            print(counter)
-            counter += 1
             for (cube, count) in cubeCounts {
                 if let intersection = cube.intersection(with: step) {
                     cubeCounts[intersection, default: 0] -= count
@@ -129,5 +126,4 @@ enum Part2 {
     }
 }
 
-//InputData.allCases.forEach(Part2.run)
-Part2.run(.challenge)
+InputData.allCases.forEach(Part2.run)
